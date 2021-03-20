@@ -1,0 +1,43 @@
+---
+title: "interactive map"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(sf)
+library(sp)
+library(maps)
+library(mapdata)
+library(leaflet)
+library(mapview)
+
+# renaming the data frame into something more manageable!
+ca_df = X2018_03_13_2021_03_15_Central_America
+
+# the latitude and longitude fields are named "latitude" and "longitude"
+
+mapview(ca_df, xcol = "longitude", ycol = "latitude", zcol = "sub_event_type", 
+        crs = 4269,
+        legend = TRUE,
+        legend.opacity = .5,
+        grid = FALSE,
+        map.types = c("OpenStreetMap", "Esri.WorldImagery"),
+        use.layer.names = TRUE,
+        alpha = 0.1,
+        alpha.regions = 0.1,
+        cex = 3,
+        label = ca_df$sub_event_type
+        )
+
+# mapview(ca_df, xcol = "longitude", ycol = "latitude", crs = 4269, grid = FALSE,
+#         map.types =  c("Esri.WorldStreetMap", "Esri.WorldShadedRelief", "Esri.WorldImagery"),
+#           #mapviewGetOption ("basemaps"),
+#         use.layer.names = TRUE,
+#         legend = TRUE
+#       
+#         )
+```
+
