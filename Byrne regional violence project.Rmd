@@ -35,11 +35,10 @@ ca_points = cbind(ca, st_coordinates(st_centroid(ca$geometry)))
 # grabbing the oceans polygons
 oceans = ne_download(scale = 50, type = 'ocean', category = 'physical', returnclass = "sf")
 
-#testing
-# ggplot(data=oceans)+
-#   geom_sf()
+
 ```
 
+#The code below builds the basemap, nothing more. No incident information is plotted.
 ```{r}
 # renaming the data frame into something more manageable!
 ca_df = X2018_03_13_2021_03_15_Central_America
@@ -54,8 +53,7 @@ names(ca_table)[2] = 'country'
 ca_table = filter(ca_table, type == "Attack")
 
 # building the basemap
-
-ggplot() +  
+basemap = ggplot() +  
 
 # Attention must be paid to the order in which shapefiles are added, because
 # layers added later will overlap layers added earlier.
@@ -69,7 +67,8 @@ geom_sf(data=oceans, fill= 'steelblue1') +
       check_overlap = TRUE)+
   
   # This next line adds the Central America shapefile to the map.
-  geom_sf(data=ca, aes(fill = ca_table$Freq)) +
+  #geom_sf(data=ca, aes(fill = ca_table$Freq)) +
+  geom_sf(data=ca) +
   
   # This next line labels the Central American countries
   geom_text(data = ca_points, aes(x=X, y=Y, label = name),
@@ -77,8 +76,7 @@ geom_sf(data=oceans, fill= 'steelblue1') +
             fontface = 'bold',
             check_overlap = TRUE)+
   
-  # Plotting the data
-  #geom_map(data=ca_table, map = ca, aes(fill=Freq, map_id = country))+
+
   
   # zooming in on the area of interest
   coord_sf(xlim = c(-93, -76), ylim = c(6, 19))+
@@ -95,5 +93,31 @@ geom_sf(data=oceans, fill= 'steelblue1') +
       )+
   ggtitle('An Appropriate Title Here')
 
+# Display the basemap
+basemap
+```
+
+# Set ggmap api key
+```{r}
+ggmap::register_google(key="your key here")
+```
+
+```{r}
+
+  # # Plotting the location of each incident
+  # geom_point(data = ca_df, aes(x = longitude, y = latitude))+
+basemap2 = ggmap(get_googlemap(center = c(lon = -85, lat = 12),
+                               zoom = 5.5, scale =2,
+                               maptype = 'terrain',
+                               color = 'color'))
+
+basemap2 +  
+stat_density2d(
+  aes(x = longitude, y = latitude, fill = ..level.., alpha = ..level..), 
+  size = 0.01,
+  bins = 30,
+  geom = "polygon",
+  data = ca_df
+  ) 
 ```
 
