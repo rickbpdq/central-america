@@ -87,7 +87,6 @@ n$label <-paste(Rank, Location, sep="-")
 # Set ggmap api key
 ```{r}
 ggmap::register_google(key = "SET YOUR KEY HERE")
-ggmap::register_google(key = "AIzaSyBc_NDnwuIqJC6rYCSGB2DLFbkwTIRXe6c")
 ```
 
 # Create map with crime locations plotted
