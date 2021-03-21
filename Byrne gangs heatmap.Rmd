@@ -1,0 +1,80 @@
+---
+title: "Gang Activity Heatmap Series"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+author: "Garrick Byrne"
+---
+
+# Loading the required libraries
+```{r}
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(ggrepel)
+library(tidyverse)
+library(ggmap)
+library(chron)
+```
+
+# This script assumes that the user has loaded the data set into a variable called ca_df.
+# When importing the file, I fixed the date field to be recognized correctly as a date. 
+
+# set ggmap api key
+```{r}
+ggmap::register_google(key = "xxxx")
+```
+
+# Creating the base map
+```{r}
+
+bounding_box = c(-97,6,-76,19)
+center = c(lon = -85, lat = 12)
+
+basemap = ggmap(
+  get_stamenmap(bbox = bounding_box, maptype = "toner-lite", color = "color", zoom = 6)
+)+
+  ggtitle("Incidence of Gang Violence in Central America",
+          subtitle = "data source: acleddata.com")+
+  theme(
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+# Sorting out the data we need
+```{r}
+# First, we're going to filter the dataset to only show gang activity.
+gang_activity = filter(ca_df, grepl('Gang', actor1, ignore.case = TRUE))
+gang_activity = rbind(gang_activity, filter(ca_df, grepl('MS-13', actor1, ignore.case = TRUE)))
+gang_activity = rbind(gang_activity, filter(ca_df, grepl('B-18', actor1, ignore.case = TRUE)))
+gang_activity$dategroup = cut(gang_activity$event_date+365, breaks = '365 days')
+dategroup_labs = paste("year ending", unique(gang_activity$dategroup))
+names(dategroup_labs) = unique(gang_activity$dategroup)
+```
+
+# plotting the maps!
+```{r}
+
+basemap + stat_density_2d(
+  aes(x = longitude, y = latitude, fill = ..level.., alpha = ..level..),
+  size = .01, bins = 20, data = gang_activity,
+  geom = "polygon",
+  contour = TRUE
+  ) +
+  scale_fill_distiller(palette = 'RdYlGn')+
+  # facet_wrap(vars(year))  
+  facet_wrap(vars(
+    dategroup), 
+    labeller = labeller(dategroup = dategroup_labs),
+    nrow = 2
+  )
+
+```
+
+
